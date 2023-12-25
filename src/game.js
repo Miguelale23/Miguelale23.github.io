@@ -1,3 +1,4 @@
+import mainMenu from './mainMenu.js'
 
 window.onload = ()=>{
 
@@ -10,7 +11,7 @@ window.onload = ()=>{
             autoCenter: Phaser.Scale.Center.CENTER_HORIZONTALLY
         },
         pixelArt: true,
-        scene: [  ]
+        scene: [mainMenu]
     };
 
     new Phaser.Game(config);

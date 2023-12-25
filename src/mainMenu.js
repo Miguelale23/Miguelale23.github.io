@@ -1,3 +1,5 @@
+import Button from './button.js'
+
 export default class mainMenu extends Phaser.Scene{
 
     constructor()
@@ -12,6 +14,11 @@ export default class mainMenu extends Phaser.Scene{
     preload(){
 
     }
-    
-    
+
+
+
+    create(){
+        
+        let boton = new Button(this,0,0,'hola',() =>{console.log("nashe")})
+    }
 }
