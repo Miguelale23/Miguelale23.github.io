@@ -1,6 +1,7 @@
 @font-face {
   font-family: 'Pixeled';
   src: url('../fonts/Minecraftia.ttf') format('truetype');
+  image-rendering: pixelated;
 }
 h1 {
   text-align: center;

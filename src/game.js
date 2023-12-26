@@ -1,4 +1,5 @@
 import mainMenu from './mainMenu.js'
+import gameScene from './gameScene.js'
 
 window.onload = ()=>{
 
@@ -10,8 +11,11 @@ window.onload = ()=>{
             zoom: 3,
             autoCenter: Phaser.Scale.Center.CENTER_HORIZONTALLY
         },
+        physics: {
+            default: 'arcade',
+        },
         pixelArt: true,
-        scene: [mainMenu]
+        scene: [mainMenu, gameScene]
     };
 
     new Phaser.Game(config);
