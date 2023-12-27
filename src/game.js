@@ -13,6 +13,9 @@ window.onload = ()=>{
         },
         physics: {
             default: 'arcade',
+            arcade:{
+                debug:true
+            }
         },
         pixelArt: true,
         scene: [mainMenu, gameScene]

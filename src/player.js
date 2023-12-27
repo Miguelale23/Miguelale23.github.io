@@ -9,6 +9,8 @@ export default class player extends Phaser.Physics.Arcade.Sprite{
         scene.physics.add.existing(this)
         this.body.setGravity(0,300)
 
+        this.carryingFuel = false;
+
         this.walkSpeed = 50;
         this.jumpSpeed = 50;
         this.directionX = 0;
@@ -19,7 +21,6 @@ export default class player extends Phaser.Physics.Arcade.Sprite{
         this.upKey = scene.input.keyboard.addKey('UP');
         this.spaceKey = scene.input.keyboard.addKey('Space')
     }
-
 
     movement()
     {
