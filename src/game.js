@@ -12,7 +12,7 @@ window.onload = ()=>{
             autoCenter: Phaser.Scale.Center.CENTER_HORIZONTALLY
         },
         physics: {
-            default: 'arcade',
+            default: 'arcade'
         },
         pixelArt: true,
         scene: [mainMenu, gameScene]

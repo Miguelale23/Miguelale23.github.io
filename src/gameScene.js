@@ -96,6 +96,9 @@ export default class gameScene extends Phaser.Scene{
             }
         })
 
+        this.floorZone = this.add.zone(130, 186, 270, 5)
+        this.physics.world.enable(this.floorZone);
+
         this.time.addEvent({
             delay: this.meteorSpawnTime,
             callback: this.spawnMeteor,
@@ -131,7 +134,8 @@ export default class gameScene extends Phaser.Scene{
             })
         })
 
-        this.physics.add.collider(meteor, this.groundLayer, ()=>{
+
+        this.physics.add.overlap(meteor, this.floorZone, ()=>{
             this.sound.play('explosionSound')
             let explosion = this.add.sprite(meteor.x, meteor.y, 'explosion')
             explosion.play('explosion').on('animationcomplete',()=>{explosion.destroy()})
