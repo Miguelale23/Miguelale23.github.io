@@ -19,7 +19,6 @@ export default class player extends Phaser.Physics.Arcade.Sprite{
         this.leftKey = scene.input.keyboard.addKey('LEFT');
         this.rightKey = scene.input.keyboard.addKey('RIGHT');
         this.upKey = scene.input.keyboard.addKey('UP');
-        this.spaceKey = scene.input.keyboard.addKey('Space')
     }
 
     movement()

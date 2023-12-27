@@ -1,5 +1,6 @@
 import Player from './player.js'
 import Fuel from './fuel.js'
+import Meteor from './meteor.js'
 
 export default class gameScene extends Phaser.Scene{
 
@@ -11,6 +12,7 @@ export default class gameScene extends Phaser.Scene{
     init(data)
     {
         this.remainingFuel = data.fuel;
+        this.meteorSpawnTime = data.meteorSpawnTime;
     }
 
     preload()
@@ -21,10 +23,14 @@ export default class gameScene extends Phaser.Scene{
         this.load.spritesheet('jetPac', './assets/sprites/jetpac.png',{frameWidth: 17,frameHeight: 24})
         this.load.image('fuel', './assets/sprites/fuel.png')
         this.load.image('spaceship', './assets/sprites/spaceship.png')
+        this.load.spritesheet('meteor', './assets/sprites/meteor.png', {frameWidth:16, frameHeight:14})
+        this.load.spritesheet('explosion', './assets/sprites/explosion.png', {frameWidth:24, frameHeight:17})
 
         this.load.audio('pickSound', './assets/sounds/pick.wav')
         this.load.audio('dropSound', './assets/sounds/drop.wav')
         this.load.audio('winSound', './assets/sounds/win.wav')
+        this.load.audio('loseSound', './assets/sounds/lose.wav')
+        this.load.audio('explosionSound', './assets/sounds/explosion.wav')
     }
 
     loadAnimations()
@@ -45,12 +51,25 @@ export default class gameScene extends Phaser.Scene{
             key: 'jetPacidle',
             frames: this.anims.generateFrameNumbers('jetPac', {start:4, end:4})
         })
+
+        this.anims.create({
+            key:'meteor',
+            frames: this.anims.generateFrameNumbers('meteor', {start:0, end: 1}),
+            frameRate: 15,
+            repeat: -1
+        })
+        this.anims.create({
+            key:'explosion',
+            frames: this.anims.generateFrameNumbers('explosion', {start:0, end: 2}),
+            frameRate: 10
+        })
     }
 
     create()
     {
         this.loadAnimations();
-
+        this.gameRunning = true;
+        
         const map = this.make.tilemap({ 
 			key: 'ground_ts', 
 			tileWidth: 8, 
@@ -77,14 +96,52 @@ export default class gameScene extends Phaser.Scene{
             }
         })
 
+        this.time.addEvent({
+            delay: this.meteorSpawnTime,
+            callback: this.spawnMeteor,
+            callbackScope: this,
+            loop: true
+        })
+
         this.currentFuel = 0;
         this.textFuel = this.add.text(150,120, this.currentFuel + '/' + this.remainingFuel)
         this.spawnFuel()
     }
 
+    spawnMeteor()
+    {
+        let randomX = Phaser.Math.Between(10,this.sys.game.config.width - 10);
+        let meteor = new Meteor(this,randomX, 0)
+
+        this.physics.add.collider(meteor,this.player,(meteor,player)=>{
+            this.sound.play('explosionSound')
+            let explosion = this.add.sprite(meteor.x, meteor.y, 'explosion')
+            explosion.play('explosion').on('animationcomplete',()=>{explosion.destroy()})
+            meteor.destroy();
+            player.destroy();
+            this.fuel.destroy();
+            this.gameRunning = false;
+            this.time.delayedCall(1000,()=>{
+                this.sound.play('loseSound')
+                this.add.text(90,75, 'YOU LOSE')
+                this.time.delayedCall(2000,()=>{
+                    this.input.keyboard.removeAllListeners();
+                    this.scene.start('mainMenu')
+                })
+            })
+        })
+
+        this.physics.add.collider(meteor, this.groundLayer, ()=>{
+            this.sound.play('explosionSound')
+            let explosion = this.add.sprite(meteor.x, meteor.y, 'explosion')
+            explosion.play('explosion').on('animationcomplete',()=>{explosion.destroy()})
+            meteor.destroy();
+        })
+    }
+
     spawnFuel()
     {
-        let randomX = Phaser.Math.Between(0,this.sys.game.config.width);
+        let randomX = Phaser.Math.Between(10,this.sys.game.config.width - 10);
         this.fuel = new Fuel(this,randomX,0,this.player)
 
         this.physics.add.collider(this.fuel, this.groundLayer)
@@ -94,7 +151,6 @@ export default class gameScene extends Phaser.Scene{
             fuel.followPlayer();
         })
     }
-
     checkEndGame()
     {
         if (this.remainingFuel == this.currentFuel)
@@ -102,18 +158,20 @@ export default class gameScene extends Phaser.Scene{
             this.player.destroy();
             this.textFuel.destroy();
             this.sound.play('winSound')
-            this.add.text(115,75, 'WIN')
+            this.add.text(95,75, 'YOU WIN')
+            this.gameRunning = false;
             this.tweens.add({
                 targets: this.spaceship,
                 y: -50,
                 ease: 'easeIn',
                 duration: 3000,
-                onComplete: ()=>{ this.scene.start('mainMenu')}
+                onComplete: ()=>{ 
+                    this.input.keyboard.removeAllListeners();
+                    this.scene.start('mainMenu')}
             })
         }
         return this.remainingFuel == this.currentFuel
     }
-
     addFuel()
     {
         this.currentFuel++;
@@ -125,13 +183,6 @@ export default class gameScene extends Phaser.Scene{
             })
         }
     }
-
-    updateText()
-    {
-        this.textFuel.destroy();
-        this.textFuel = this.add.text(150,120, this.currentFuel + '/' + this.remainingFuel)
-    }
-
     addFuelAnimation(y)
     {
         this.sound.play('dropSound')
@@ -147,10 +198,17 @@ export default class gameScene extends Phaser.Scene{
         })
 
     }
+    updateText()
+    {
+        this.textFuel.destroy();
+        this.textFuel = this.add.text(150,120, this.currentFuel + '/' + this.remainingFuel)
+    }
+
+    
 
     update()
     {
-        if (this.currentFuel < this.remainingFuel)
+        if (this.gameRunning)
             this.player.update();
     }
 }
